@@ -45,12 +45,13 @@ $SideMenu.Dock          = "Left"
 $Form.Controls.Add($SideMenu)
 
 # ------------------------------
-# CONTENT PANEL
+# CONTENT PANEL (with scroll)
 # ------------------------------
 $Content                = New-Object System.Windows.Forms.Panel
 $Content.Size           = New-Object System.Drawing.Size(730,500)
 $Content.Location       = New-Object System.Drawing.Point(210,70)
 $Content.BackColor      = [System.Drawing.Color]::FromArgb(25,25,25)
+$Content.AutoScroll     = $true   # <--- Scroll activado
 $Form.Controls.Add($Content)
 
 # ------------------------------
@@ -213,3 +214,4 @@ New-MenuButton "Utilities" 200 { Show-Utilities }
 # SHOW FORM
 # ------------------------------
 [void]$Form.ShowDialog()
+
