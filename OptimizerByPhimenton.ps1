@@ -1,7 +1,7 @@
 <#
-    Optimizer by Phimenton
+    Optimizer by Phimenton (Extendido)
     Modern PowerShell PC Optimizer with GUI
-    Created by Phimenton
+    Modificado con más Tweaks y Apps
 #>
 
 # ------------------------------
@@ -98,7 +98,7 @@ function Add-ContentLabel($text,$yPos) {
 function Add-ContentButton($text,$yPos,$onClick) {
     $btn                 = New-Object System.Windows.Forms.Button
     $btn.Text            = $text
-    $btn.Size            = New-Object System.Drawing.Size(200,35)
+    $btn.Size            = New-Object System.Drawing.Size(250,35)
     $btn.Location        = New-Object System.Drawing.Point(20,$yPos)
     $btn.BackColor       = [System.Drawing.Color]::FromArgb(50,50,50)
     $btn.FlatStyle       = "Flat"
@@ -125,6 +125,11 @@ function Show-Tweaks {
     Add-ContentButton "Disable Windows Search Index" 330 { Stop-Service WSearch -Force; Set-Service WSearch -StartupType Disabled }
     Add-ContentButton "Disable OneDrive" 370 { Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue; Start-Process "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" "/uninstall" }
     Add-ContentButton "Optimize Network (Low Latency)" 410 { New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSMQ\Parameters" -Name TCPNoDelay -PropertyType DWord -Value 1 -Force }
+
+    # 🔧 Nuevos Tweaks
+    Add-ContentButton "Disable Lock Screen" 450 { New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name NoLockScreen -Value 1 -PropertyType DWord -Force }
+    Add-ContentButton "Disable Startup Delay" 490 { Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize" -Name StartupDelayInMSec -Value 0 -Type DWord }
+    Add-ContentButton "Enable Dark Mode" 530 { Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name AppsUseLightTheme -Value 0 -Type DWord }
 }
 
 # ------------------------------
@@ -142,6 +147,12 @@ function Show-Apps {
         @{ Name="Telegram"; URL="https://telegram.org/dl/desktop/win64" }
         @{ Name="Notepad++"; URL="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.4/npp.8.6.4.Installer.x64.exe" }
         @{ Name="Visual Studio Code"; URL="https://update.code.visualstudio.com/latest/win32-x64-user/stable" }
+
+        # ➕ Nuevos
+        @{ Name="Steam"; URL="https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe" }
+        @{ Name="Epic Games Launcher"; URL="https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi" }
+        @{ Name="Git"; URL="https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe" }
+        @{ Name="Python"; URL="https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe" }
     )
 
     $y=50
@@ -164,6 +175,10 @@ function Show-Multimedia {
         @{ Name="OBS Studio"; URL="https://cdn-fastly.obsproject.com/downloads/OBS-Studio-30.0.2-Full-Installer-x64.exe" }
         @{ Name="GIMP"; URL="https://download.gimp.org/gimp/v2.10/windows/gimp-2.10.36-setup.exe" }
         @{ Name="Audacity"; URL="https://github.com/audacity/audacity/releases/download/Audacity-3.4.2/audacity-win-3.4.2-64bit.exe" }
+
+        # ➕ Nuevos
+        @{ Name="DaVinci Resolve"; URL="https://www.blackmagicdesign.com/products/davinciresolve/" }
+        @{ Name="K-Lite Codec Pack"; URL="https://files2.codecguide.com/K-Lite_Codec_Pack_1765_Full.exe" }
     )
 
     $y=50
@@ -193,6 +208,10 @@ function Show-Utilities {
         @{ Name="Rufus"; URL="https://github.com/pbatard/rufus/releases/download/v4.4/rufus-4.4.exe" }
         @{ Name="Everything Search"; URL="https://www.voidtools.com/Everything-1.4.1.1024.x64-Setup.exe" }
         @{ Name="Autoruns"; URL="https://download.sysinternals.com/files/Autoruns.zip" }
+
+        # ➕ Nuevos
+        @{ Name="Process Explorer"; URL="https://download.sysinternals.com/files/ProcessExplorer.zip" }
+        @{ Name="CCleaner"; URL="https://download.ccleaner.com/ccsetup614.exe" }
     )
 
     $y=50
@@ -214,4 +233,3 @@ New-MenuButton "Utilities" 200 { Show-Utilities }
 # SHOW FORM
 # ------------------------------
 [void]$Form.ShowDialog()
-
