@@ -1,187 +1,175 @@
-# ---------------------------------------------------------
-# COMPLETE PC OPTIMIZER - MODERN GUI
-# Created by Phimenton
-# ---------------------------------------------------------
+# ==============================
+# Windows Optimizer - Created by Phimenton
+# ==============================
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Drawing.Drawing2D
 
-# Fuente moderna
-$fontMain = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Regular)
-
-# Formulario principal
+# ------------------------------
+# Main Form
+# ------------------------------
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Complete PC Optimizer"
-$form.Size = [System.Drawing.Size]::new(700,500)
+$form.Text = "PC Optimizer - By Phimenton"
+$form.Size = New-Object System.Drawing.Size(700,500)
 $form.StartPosition = "CenterScreen"
-$form.FormBorderStyle = "FixedDialog"
-$form.MaximizeBox = $false
+$form.BackColor = [System.Drawing.Color]::FromArgb(40,40,40)
 
-# Gradiente de fondo
-$form.Paint.Add({
-    $g = $_.Graphics
-    $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush `
-        ($form.DisplayRectangle, [System.Drawing.Color]::FromArgb(30,30,30), [System.Drawing.Color]::FromArgb(0,122,204), 90)
-    $g.FillRectangle($brush, $form.DisplayRectangle)
-    $brush.Dispose()
-})
+# Title
+$lblTitle = New-Object System.Windows.Forms.Label
+$lblTitle.Text = "PC Optimizer"
+$lblTitle.ForeColor = "White"
+$lblTitle.Font = New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
+$lblTitle.AutoSize = $true
+$lblTitle.Location = New-Object System.Drawing.Point(250,10)
+$form.Controls.Add($lblTitle)
 
-# Función para crear botones redondeados
-Function New-RoundedButton {
-    param($Text, $Size, $Location, $Action)
+# Author
+$lblAuthor = New-Object System.Windows.Forms.Label
+$lblAuthor.Text = "Created by Phimenton"
+$lblAuthor.ForeColor = [System.Drawing.Color]::FromArgb(0,200,100)
+$lblAuthor.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Italic)
+$lblAuthor.AutoSize = $true
+$lblAuthor.Location = New-Object System.Drawing.Point(500,440)
+$form.Controls.Add($lblAuthor)
+
+# ------------------------------
+# Tabs
+# ------------------------------
+$tabControl = New-Object System.Windows.Forms.TabControl
+$tabControl.Size = New-Object System.Drawing.Size(660,400)
+$tabControl.Location = New-Object System.Drawing.Point(20,50)
+
+$tabTweaks     = New-Object System.Windows.Forms.TabPage
+$tabTweaks.Text = "Tweaks"
+$tabApps       = New-Object System.Windows.Forms.TabPage
+$tabApps.Text = "Apps"
+$tabMultimedia = New-Object System.Windows.Forms.TabPage
+$tabMultimedia.Text = "Multimedia"
+$tabUtilities  = New-Object System.Windows.Forms.TabPage
+$tabUtilities.Text = "Utilities"
+
+$tabControl.TabPages.AddRange(@($tabTweaks,$tabApps,$tabMultimedia,$tabUtilities))
+$form.Controls.Add($tabControl)
+
+# ------------------------------
+# Helper Function - Buttons
+# ------------------------------
+function New-RoundedButton {
+    param([string]$text,[int]$y,[scriptblock]$action)
     $btn = New-Object System.Windows.Forms.Button
-    $btn.Text = $Text
-    $btn.Size = $Size
-    $btn.Location = $Location
+    $btn.Text = $text
+    $btn.Size = New-Object System.Drawing.Size(200,40)
+    $btn.Location = New-Object System.Drawing.Point(30,$y)
+    $btn.BackColor = [System.Drawing.Color]::FromArgb(70,130,180)
+    $btn.ForeColor = "White"
     $btn.FlatStyle = "Flat"
-    $btn.Font = $fontMain
-    $btn.ForeColor = [System.Drawing.Color]::White
-    $btn.BackColor = [System.Drawing.Color]::FromArgb(0,122,204)
-    # Bordes redondeados
-    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $path.AddArc(0,0,20,20,180,90)
-    $path.AddArc($btn.Width-20,0,20,20,270,90)
-    $path.AddArc($btn.Width-20,$btn.Height-20,20,20,0,90)
-    $path.AddArc(0,$btn.Height-20,20,20,90,90)
-    $path.CloseFigure()
-    $btn.Region = New-Object System.Drawing.Region($path)
-    $btn.Add_Click($Action)
+    $btn.Add_Click($action)
     return $btn
 }
 
-# TabControl
-$tabControl = New-Object System.Windows.Forms.TabControl
-$tabControl.Size = [System.Drawing.Size]::new(680,430)
-$tabControl.Location = [System.Drawing.Point]::new(10,10)
-$tabControl.Font = $fontMain
-
-# =======================
-# TAB TWEAKS
-# =======================
-$tabTweaks = New-Object System.Windows.Forms.TabPage
-$tabTweaks.Text = "Tweaks"
-$tabTweaks.BackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-
-# Ejemplo de botón Tweaks
-$btnServices = New-RoundedButton "Disable Services" ([System.Drawing.Size]::new(300,35)) ([System.Drawing.Point]::new(20,20)) {
-    Start-Process powershell -Verb RunAs -ArgumentList {
-        sc config "DiagTrack" start= disabled
-        sc stop "DiagTrack"
-        sc config "SysMain" start= disabled
-        sc stop "SysMain"
-        [System.Windows.Forms.MessageBox]::Show("Services disabled successfully.")
-    }
+# ------------------------------
+# Tweaks Tab
+# ------------------------------
+$btnRestore = New-RoundedButton "Crear punto de restauración" 30 {
+    Checkpoint-Computer -Description "RestorePoint" -RestorePointType "MODIFY_SETTINGS"
+    [System.Windows.Forms.MessageBox]::Show("Punto de restauración creado.")
 }
-$tabTweaks.Controls.Add($btnServices)
+$tabTweaks.Controls.Add($btnRestore)
 
-# Agregar más botones Tweaks aquí: Registry, Telemetry, Cortana, Restore Point, SFC, Bloatware
-# Por ejemplo: Optimize Registry
-$btnRegistry = New-RoundedButton "Optimize Registry" ([System.Drawing.Size]::new(300,35)) ([System.Drawing.Point]::new(20,70)) {
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Value "2000"
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Value "2000"
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Value "1"
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "VisualFXSetting" -Value 2
-    [System.Windows.Forms.MessageBox]::Show("Registry optimized.")
+$btnSFC = New-RoundedButton "Ejecutar SFC /scannow" 80 {
+    Start-Process "sfc" "/scannow" -Verb RunAs
 }
-$tabTweaks.Controls.Add($btnRegistry)
+$tabTweaks.Controls.Add($btnSFC)
 
-# =======================
-# TAB APPS
-# =======================
-$tabApps = New-Object System.Windows.Forms.TabPage
-$tabApps.Text = "Apps"
-$tabApps.BackColor = [System.Drawing.Color]::FromArgb(45,45,48)
+$btnTelemetry = New-RoundedButton "Desactivar Telemetría" 130 {
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0
+    [System.Windows.Forms.MessageBox]::Show("Telemetría desactivada.")
+}
+$tabTweaks.Controls.Add($btnTelemetry)
 
+$btnCortana = New-RoundedButton "Desinstalar Cortana" 180 {
+    Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage
+    [System.Windows.Forms.MessageBox]::Show("Cortana desinstalada.")
+}
+$tabTweaks.Controls.Add($btnCortana)
+
+$btnBloatware = New-RoundedButton "Eliminar Bloatware" 230 {
+    Get-AppxPackage -AllUsers | Where-Object {
+        $_.Name -notlike "*Store*" -and
+        $_.Name -notlike "*Calculator*" -and
+        $_.Name -notlike "*Photos*"
+    } | Remove-AppxPackage
+    [System.Windows.Forms.MessageBox]::Show("Bloatware eliminado.")
+}
+$tabTweaks.Controls.Add($btnBloatware)
+
+# ------------------------------
+# Apps Tab
+# ------------------------------
 $apps = @(
-    @{Name="Google Chrome";URL="https://dl.google.com/chrome/install/latest/chrome_installer.exe"},
-    @{Name="Brave Browser";URL="https://laptop-updates.brave.com/latest/winx64"},
-    @{Name="Discord";URL="https://discord.com/api/download?platform=win"},
-    @{Name="Telegram";URL="https://telegram.org/dl/desktop/win"}
+    @{ Name = "Brave"; URL = "https://laptop-updates.brave.com/latest/winx64" }
+    @{ Name = "Google Chrome"; URL = "https://dl.google.com/chrome/install/latest/chrome_installer.exe" }
+    @{ Name = "Discord"; URL = "https://discord.com/api/download?platform=win" }
+    @{ Name = "Telegram"; URL = "https://telegram.org/dl/desktop/win64" }
 )
 
-$yPos=20
 foreach ($app in $apps) {
-    $btn = New-RoundedButton ("Install " + $app.Name) ([System.Drawing.Size]::new(200,35)) ([System.Drawing.Point]::new(20,$yPos)) {
-        $tempPath = "$env:TEMP\$($app.Name).exe"
-        Invoke-WebRequest -Uri $app.URL -OutFile $tempPath
-        Start-Process $tempPath -Wait
-        Remove-Item $tempPath
-        [System.Windows.Forms.MessageBox]::Show("$($app.Name) installed successfully.")
-    })
+    $btn = New-RoundedButton $app.Name (30 + ($apps.IndexOf($app) * 50)) {
+        try {
+            Start-Process "msedge.exe" $app.URL
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error instalando $($app.Name): $($_.Exception.Message)")
+        }
+    }
     $tabApps.Controls.Add($btn)
-    $yPos += 45
 }
 
-# =======================
-# TAB MULTIMEDIA
-# =======================
-$tabMedia = New-Object System.Windows.Forms.TabPage
-$tabMedia.Text = "Multimedia"
-$tabMedia.BackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-
+# ------------------------------
+# Multimedia Tab
+# ------------------------------
 $mediaApps = @(
-    @{Name="Spotify";URL="https://download.scdn.co/SpotifySetup.exe"},
-    @{Name="VLC Media Player";URL="https://get.videolan.org/vlc/last/win64/vlc-3.0.18-win64.exe"},
-    @{Name="OBS Studio";URL="https://cdn-fastly.obsproject.com/downloads/OBS-Studio-29.1.3-Full-Installer-x64.exe"}
+    @{ Name = "Spotify"; URL = "https://download.scdn.co/SpotifySetup.exe" }
+    @{ Name = "VLC"; URL = "https://get.videolan.org/vlc/last/win64/vlc-3.0.20-win64.exe" }
 )
 
-$yPos=20
 foreach ($mApp in $mediaApps) {
-    $btn = New-RoundedButton ("Install " + $mApp.Name) ([System.Drawing.Size]::new(200,35)) ([System.Drawing.Point]::new(20,$yPos)) {
-        $tempPath = "$env:TEMP\$($mApp.Name).exe"
-        Invoke-WebRequest -Uri $mApp.URL -OutFile $tempPath
-        Start-Process $tempPath -Wait
-        Remove-Item $tempPath
-        [System.Windows.Forms.MessageBox]::Show("$($mApp.Name) installed successfully.")
-    })
-    $tabMedia.Controls.Add($btn)
-    $yPos += 45
+    $btn = New-RoundedButton $mApp.Name (30 + ($mediaApps.IndexOf($mApp) * 50)) {
+        try {
+            Start-Process "msedge.exe" $mApp.URL
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error instalando $($mApp.Name): $($_.Exception.Message)")
+        }
+    }
+    $tabMultimedia.Controls.Add($btn)
 }
 
-# =======================
-# TAB UTILITIES
-# =======================
-$tabUtils = New-Object System.Windows.Forms.TabPage
-$tabUtils.Text = "Utilities"
-$tabUtils.BackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-
+# ------------------------------
+# Utilities Tab
+# ------------------------------
 $utilities = @(
-    @{Name="AnyDesk";URL="https://download.anydesk.com/AnyDesk.exe"},
-    @{Name="TeamViewer";URL="https://download.teamviewer.com/download/TeamViewer_Setup.exe"},
-    @{Name="7-Zip";URL="https://www.7-zip.org/a/7z2301-x64.exe"},
-    @{Name="WinRAR";URL="https://www.rarlab.com/rar/win/rarx64.exe"},
-    @{Name="CPU-Z";URL="https://www.cpuid.com/downloads/cpu-z/cpu-z_2.09-en.exe"},
-    @{Name="CrystalDiskInfo";URL="https://crystalmark.info/download/index-e.php?file=CrystalDiskInfo8_12_0.exe"},
-    @{Name="GPU-Z";URL="https://www.techpowerup.com/download/techpowerup-gpu-z/"},
-    @{Name="Revo Uninstaller";URL="https://www.revouninstaller.com/revo_uninstaller_free_download.html"}
+    @{ Name = "7-Zip"; URL = "https://www.7-zip.org/a/7z1900-x64.exe" }
+    @{ Name = "WinRAR"; URL = "https://www.win-rar.com/fileadmin/winrar-versions/winrar/winrar-x64-611.exe" }
+    @{ Name = "AnyDesk"; URL = "https://download.anydesk.com/AnyDesk.exe" }
+    @{ Name = "TeamViewer"; URL = "https://download.teamviewer.com/download/TeamViewer_Setup.exe" }
+    @{ Name = "CPU-Z"; URL = "https://download.cpuid.com/cpu-z/cpu-z_2.08-en.exe" }
+    @{ Name = "CrystalDiskInfo"; URL = "https://osdn.net/projects/crystaldiskinfo/downloads/77845/CrystalDiskInfo8_17_4.exe" }
+    @{ Name = "GPU-Z"; URL = "https://us2-dl.techpowerup.com/files/GPU-Z.2.52.0.exe" }
+    @{ Name = "Revo Uninstaller"; URL = "https://download.revouninstaller.com/download/revosetup.exe" }
 )
 
-$yPos=20
 foreach ($uApp in $utilities) {
-    $btn = New-RoundedButton ("Install " + $uApp.Name) ([System.Drawing.Size]::new(200,35)) ([System.Drawing.Point]::new(20,$yPos)) {
-        $tempPath = "$env:TEMP\$($uApp.Name).exe"
-        Invoke-WebRequest -Uri $uApp.URL -OutFile $tempPath
-        Start-Process $tempPath -Wait
-        Remove-Item $tempPath
-        [System.Windows.Forms.MessageBox]::Show("$($uApp.Name) installed successfully.")
-    })
-    $tabUtils.Controls.Add($btn)
-    $yPos += 45
+    $btn = New-RoundedButton $uApp.Name (30 + ($utilities.IndexOf($uApp) * 50)) {
+        try {
+            Start-Process "msedge.exe" $uApp.URL
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error instalando $($uApp.Name): $($_.Exception.Message)")
+        }
+    }
+    $tabUtilities.Controls.Add($btn)
 }
 
-# =======================
-# Añadir Tabs al TabControl
-$tabControl.TabPages.AddRange(@($tabTweaks,$tabApps,$tabMedia,$tabUtils))
-$form.Controls.Add($tabControl)
-
-# Label de autor
-$lblAuthor = New-Object System.Windows.Forms.Label
-$lblAuthor.Text = "Created by Phimenton"
-$lblAuthor.ForeColor = [System.Drawing.Color]::FromArgb(0,255,128)
-$lblAuthor.Font = $fontMain
-$lblAuthor.Size = [System.Drawing.Size]::new(200,20)
-$lblAuthor.Location = [System.Drawing.Point]::new(480,445)
-$form.Controls.Add($lblAuthor)
-
+# ------------------------------
+# Run Form
+# ------------------------------
 $form.Add_Shown({$form.Activate()})
 [void]$form.ShowDialog()
