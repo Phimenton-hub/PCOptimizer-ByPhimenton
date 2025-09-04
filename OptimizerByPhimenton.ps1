@@ -1,7 +1,6 @@
 <#
-    Optimizer by Phimenton (Extendido)
+    Optimizer by Phimenton (Extendido con barra personalizada)
     Modern PowerShell PC Optimizer with GUI
-    Modificado con más Tweaks y Apps
 #>
 
 # ------------------------------
@@ -18,6 +17,7 @@ $Form.Text            = "PC Optimizer - Created by Phimenton"
 $Form.Size            = New-Object System.Drawing.Size(950,600)
 $Form.StartPosition   = "CenterScreen"
 $Form.BackColor       = [System.Drawing.Color]::FromArgb(20,20,20)
+$Form.FormBorderStyle = "None"  # 🔹 quitamos barra estándar de Windows
 
 # FONT COLORS
 $primaryColor   = [System.Drawing.Color]::FromArgb(0, 200, 200)   # cyan neón
@@ -25,15 +25,59 @@ $accentColor    = [System.Drawing.Color]::FromArgb(0, 180, 80)    # verde acento
 $textColor      = [System.Drawing.Color]::White
 
 # ------------------------------
-# HEADER LABEL
+# CUSTOM TITLE BAR
 # ------------------------------
-$Header                 = New-Object System.Windows.Forms.Label
-$Header.Text            = "PC Optimizer Dashboard"
-$Header.ForeColor       = $primaryColor
-$Header.Font            = New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
-$Header.AutoSize        = $true
-$Header.Location        = New-Object System.Drawing.Point(300,20)
-$Form.Controls.Add($Header)
+$TitleBar               = New-Object System.Windows.Forms.Panel
+$TitleBar.Size          = New-Object System.Drawing.Size(950,35)
+$TitleBar.Dock          = "Top"
+$TitleBar.BackColor     = [System.Drawing.Color]::FromArgb(30,30,30)
+$Form.Controls.Add($TitleBar)
+
+# Título
+$TitleLabel             = New-Object System.Windows.Forms.Label
+$TitleLabel.Text        = "PC Optimizer - Created by Phimenton"
+$TitleLabel.ForeColor   = $primaryColor
+$TitleLabel.Font        = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
+$TitleLabel.AutoSize    = $true
+$TitleLabel.Location    = New-Object System.Drawing.Point(10,7)
+$TitleBar.Controls.Add($TitleLabel)
+
+# Botón Minimizar
+$MinBtn                 = New-Object System.Windows.Forms.Button
+$MinBtn.Text            = "–"
+$MinBtn.Size            = New-Object System.Drawing.Size(40,30)
+$MinBtn.Location        = New-Object System.Drawing.Point(860,2)
+$MinBtn.BackColor       = [System.Drawing.Color]::FromArgb(45,45,45)
+$MinBtn.ForeColor       = $textColor
+$MinBtn.FlatStyle       = "Flat"
+$MinBtn.Add_Click({ $Form.WindowState = "Minimized" })
+$TitleBar.Controls.Add($MinBtn)
+
+# Botón Cerrar
+$CloseBtn               = New-Object System.Windows.Forms.Button
+$CloseBtn.Text          = "X"
+$CloseBtn.Size          = New-Object System.Drawing.Size(40,30)
+$CloseBtn.Location      = New-Object System.Drawing.Point(905,2)
+$CloseBtn.BackColor     = [System.Drawing.Color]::FromArgb(60,0,0)
+$CloseBtn.ForeColor     = $textColor
+$CloseBtn.FlatStyle     = "Flat"
+$CloseBtn.Add_Click({ $Form.Close() })
+$TitleBar.Controls.Add($CloseBtn)
+
+# Permitir mover ventana arrastrando el TitleBar
+$TitleBar.Add_MouseDown({
+    $global:mouseDown = $true
+    $global:lastPoint = $_.Location
+})
+$TitleBar.Add_MouseUp({
+    $global:mouseDown = $false
+})
+$TitleBar.Add_MouseMove({
+    if ($global:mouseDown) {
+        $Form.Left += ($_.X - $global:lastPoint.X)
+        $Form.Top  += ($_.Y - $global:lastPoint.Y)
+    }
+})
 
 # ------------------------------
 # SIDE MENU PANEL
@@ -66,7 +110,7 @@ $Footer.Location        = New-Object System.Drawing.Point(400,540)
 $Form.Controls.Add($Footer)
 
 # ------------------------------
-# HELPER: CREATE BUTTONS
+# HELPER FUNCTIONS
 # ------------------------------
 function New-MenuButton($text,$yPos,$onClick) {
     $btn                 = New-Object System.Windows.Forms.Button
@@ -126,7 +170,7 @@ function Show-Tweaks {
     Add-ContentButton "Disable OneDrive" 370 { Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue; Start-Process "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" "/uninstall" }
     Add-ContentButton "Optimize Network (Low Latency)" 410 { New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSMQ\Parameters" -Name TCPNoDelay -PropertyType DWord -Value 1 -Force }
 
-    # 🔧 Nuevos Tweaks
+    # Nuevos Tweaks
     Add-ContentButton "Disable Lock Screen" 450 { New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name NoLockScreen -Value 1 -PropertyType DWord -Force }
     Add-ContentButton "Disable Startup Delay" 490 { Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize" -Name StartupDelayInMSec -Value 0 -Type DWord }
     Add-ContentButton "Enable Dark Mode" 530 { Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name AppsUseLightTheme -Value 0 -Type DWord }
@@ -148,7 +192,7 @@ function Show-Apps {
         @{ Name="Notepad++"; URL="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.4/npp.8.6.4.Installer.x64.exe" }
         @{ Name="Visual Studio Code"; URL="https://update.code.visualstudio.com/latest/win32-x64-user/stable" }
 
-        # ➕ Nuevos
+        # Nuevos
         @{ Name="Steam"; URL="https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe" }
         @{ Name="Epic Games Launcher"; URL="https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi" }
         @{ Name="Git"; URL="https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe" }
@@ -176,7 +220,7 @@ function Show-Multimedia {
         @{ Name="GIMP"; URL="https://download.gimp.org/gimp/v2.10/windows/gimp-2.10.36-setup.exe" }
         @{ Name="Audacity"; URL="https://github.com/audacity/audacity/releases/download/Audacity-3.4.2/audacity-win-3.4.2-64bit.exe" }
 
-        # ➕ Nuevos
+        # Nuevos
         @{ Name="DaVinci Resolve"; URL="https://www.blackmagicdesign.com/products/davinciresolve/" }
         @{ Name="K-Lite Codec Pack"; URL="https://files2.codecguide.com/K-Lite_Codec_Pack_1765_Full.exe" }
     )
@@ -209,7 +253,7 @@ function Show-Utilities {
         @{ Name="Everything Search"; URL="https://www.voidtools.com/Everything-1.4.1.1024.x64-Setup.exe" }
         @{ Name="Autoruns"; URL="https://download.sysinternals.com/files/Autoruns.zip" }
 
-        # ➕ Nuevos
+        # Nuevos
         @{ Name="Process Explorer"; URL="https://download.sysinternals.com/files/ProcessExplorer.zip" }
         @{ Name="CCleaner"; URL="https://download.ccleaner.com/ccsetup614.exe" }
     )
